@@ -1,6 +1,14 @@
+-- Everything lives in the "campusmart" schema so this app can share a Supabase project with others.
+-- After running, add "campusmart" under Supabase → Project Settings → Data API → Exposed schemas.
+create schema if not exists campusmart;
+grant usage on schema campusmart to anon, authenticated, service_role;
+alter default privileges in schema campusmart grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema campusmart grant all on sequences to anon, authenticated, service_role;
+alter default privileges in schema campusmart grant execute on functions to anon, authenticated, service_role;
+
 -- CampusMart schema.
 
-create table public.listings (
+create table campusmart.listings (
   id uuid primary key default gen_random_uuid(),
   seller_id uuid not null references auth.users on delete cascade default auth.uid(),
   seller_name text not null,
@@ -20,14 +28,14 @@ create table public.listings (
   ) stored
 );
 
-create index listings_search_idx on public.listings using gin (search);
-create index listings_feed_idx on public.listings (status, created_at desc);
+create index listings_search_idx on campusmart.listings using gin (search);
+create index listings_feed_idx on campusmart.listings (status, created_at desc);
 
-alter table public.listings enable row level security;
-create policy "anyone can browse" on public.listings for select using (true);
-create policy "sellers create" on public.listings for insert with check (seller_id = auth.uid());
-create policy "sellers update own" on public.listings for update using (seller_id = auth.uid());
-create policy "sellers delete own" on public.listings for delete using (seller_id = auth.uid());
+alter table campusmart.listings enable row level security;
+create policy "anyone can browse" on campusmart.listings for select using (true);
+create policy "sellers create" on campusmart.listings for insert with check (seller_id = auth.uid());
+create policy "sellers update own" on campusmart.listings for update using (seller_id = auth.uid());
+create policy "sellers delete own" on campusmart.listings for delete using (seller_id = auth.uid());
 
 -- Public image bucket; users may only write inside a folder named after their user id.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -37,3 +45,8 @@ create policy "upload own images" on storage.objects for insert to authenticated
   with check (bucket_id = 'listing-images' and (storage.foldername(name))[1] = auth.uid()::text);
 create policy "delete own images" on storage.objects for delete to authenticated
   using (bucket_id = 'listing-images' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Table access is still governed by the RLS policies above.
+grant all on all tables in schema campusmart to anon, authenticated, service_role;
+grant all on all sequences in schema campusmart to anon, authenticated, service_role;
+grant execute on all functions in schema campusmart to anon, authenticated, service_role;
