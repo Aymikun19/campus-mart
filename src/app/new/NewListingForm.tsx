@@ -1,5 +1,7 @@
 "use client";
 
+import { ImagePlus } from "lucide-react";
+
 import { useActionState, useState } from "react";
 import { createListing } from "../actions";
 import { CATEGORIES } from "@/lib/market";
@@ -15,7 +17,9 @@ export function NewListingForm() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt="Preview" className="h-full w-full object-cover" />
         ) : (
-          "📷 Add a photo (JPG/PNG/WebP, max 3 MB)"
+          <span className="flex flex-col items-center gap-2">
+            <ImagePlus size={28} aria-hidden /> Add a photo (JPG/PNG/WebP, max 3 MB)
+          </span>
         )}
         <input type="file" name="image" accept="image/jpeg,image/png,image/webp" className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; setPreview(f ? URL.createObjectURL(f) : null); }} />

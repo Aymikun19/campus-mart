@@ -1,3 +1,5 @@
+import { Search } from "lucide-react";
+import { CategoryIcon } from "@/lib/category-icons";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { CATEGORIES, imageUrl, naira, searchQuery, type Listing } from "@/lib/market";
@@ -22,12 +24,14 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
           {CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
         <input name="max" defaultValue={max} inputMode="numeric" placeholder="Max ₦" className="w-28 rounded-xl border border-stone-300 px-3 py-2 text-sm" />
-        <button className="btn">Search</button>
+        <button className="btn"><Search size={16} aria-hidden /> Search</button>
       </form>
 
       <div className="flex flex-wrap gap-2">
         {CATEGORIES.map(([v, l]) => (
-          <Link key={v} href={`/?cat=${v}`} className={`badge !px-3 !py-1 ${cat === v ? "!bg-accent !text-white" : ""}`}>{l}</Link>
+          <Link key={v} href={`/?cat=${v}`} className={`badge inline-flex items-center gap-1.5 !px-3 !py-1 ${cat === v ? "!bg-accent !text-white" : ""}`}>
+            <CategoryIcon category={v} size={14} /> {l}
+          </Link>
         ))}
       </div>
 
@@ -40,7 +44,9 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={imageUrl(l.image_path)!} alt={l.title} className="h-full w-full object-cover" loading="lazy" />
               ) : (
-                <div className="grid h-full place-items-center text-4xl">📦</div>
+                <div className="grid h-full place-items-center text-stone-300">
+                  <CategoryIcon category={l.category} size={48} />
+                </div>
               )}
             </div>
             <div className="p-3">

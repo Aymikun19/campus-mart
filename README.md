@@ -1,3 +1,5 @@
+<img src="public/logo.svg" alt="" width="64" height="64">
+
 # CampusMart
 
 A marketplace where students buy and sell on campus: textbooks, gadgets, hostel items, food and services. Buyers contact sellers on WhatsApp with one tap.

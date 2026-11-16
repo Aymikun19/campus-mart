@@ -1,11 +1,11 @@
 export const CATEGORIES = [
-  ["books", "📚 Books"],
-  ["electronics", "💻 Electronics"],
-  ["fashion", "👟 Fashion"],
-  ["hostel", "🛏️ Hostel items"],
-  ["food", "🍲 Food"],
-  ["services", "🛠️ Services"],
-  ["other", "📦 Other"],
+  ["books", "Books"],
+  ["electronics", "Electronics"],
+  ["fashion", "Fashion"],
+  ["hostel", "Hostel items"],
+  ["food", "Food"],
+  ["services", "Services"],
+  ["other", "Other"],
 ] as const;
 
 export type Listing = {
