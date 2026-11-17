@@ -1,7 +1,10 @@
 import { requireUser } from "@/lib/supabase/server";
-import { NewListingForm } from "./NewListingForm";
+import { createListing } from "../actions";
+import { ListingForm } from "../ListingForm";
+
+export const metadata = { title: "Sell an item" };
 
 export default async function NewListing() {
   await requireUser();
-  return <NewListingForm />;
+  return <ListingForm action={createListing} />;
 }

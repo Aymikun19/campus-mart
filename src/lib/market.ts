@@ -30,3 +30,32 @@ export function waLink(phone: string, title: string) {
 
 /** Turn free text into a safe websearch query for Postgres full-text search. */
 export const searchQuery = (q: string) => q.replace(/[^\p{L}\p{N}\s"-]/gu, " ").trim().slice(0, 80);
+
+export const CONDITIONS = [
+  ["new", "New"],
+  ["like-new", "Like new"],
+  ["used", "Used"],
+] as const;
+
+export const SORTS = [
+  ["new", "Newest first"],
+  ["price-asc", "Price: low to high"],
+  ["price-desc", "Price: high to low"],
+] as const;
+
+export const PAGE_SIZE = 24;
+
+/** "3h ago", "2d ago" */
+export function ago(iso: string, now = Date.now()) {
+  const m = Math.max(0, Math.round((now - new Date(iso).getTime()) / 60000));
+  if (m < 60) return `${m || 1}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 48) return `${h}h ago`;
+  const d = Math.round(h / 24);
+  return d < 60 ? `${d}d ago` : new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+export const label = (list: readonly (readonly [string, string])[], v: string) => list.find(([k]) => k === v)?.[1] ?? v;
+
+/** Posted in the last 48 hours. */
+export const isFresh = (iso: string, now = Date.now()) => now - new Date(iso).getTime() < 48 * 3600 * 1000;

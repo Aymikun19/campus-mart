@@ -1,27 +1,30 @@
-import { Plus } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import { brand } from "@/lib/brand";
+import { SITE_URL } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
+import { SiteFooter, SiteHeader } from "@/components/kit/SiteHeader";
 
-export const metadata: Metadata = { title: "CampusMart", description: "Buy and sell within your campus." };
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: { default: `${brand.name}: ${brand.short}`, template: `%s · ${brand.name}` },
+  description: brand.description,
+  openGraph: { title: brand.name, description: brand.description, siteName: brand.name, type: "website" },
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   return (
-    <html lang="en">
-      <body>
-        <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur">
-          <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-            <Link href="/" className="flex items-center gap-2 text-lg font-bold">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="" width={24} height={24} className="h-6 w-6" />
-            <span><span className="text-accent">Campus</span>Mart</span></Link>
-            <div className="flex items-center gap-3 text-sm">
-              <Link href="/me" className="text-stone-600 hover:text-stone-900">My listings</Link>
-              <Link href="/new" className="btn !py-1.5"><Plus size={16} aria-hidden /> Sell</Link>
-            </div>
-          </nav>
-        </header>
-        <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="flex min-h-screen flex-col">
+        <SiteHeader email={user?.email} />
+        <main className={`mx-auto w-full flex-1 px-4 py-8 ${brand.width}`}>{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );
