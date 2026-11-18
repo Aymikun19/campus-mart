@@ -12,6 +12,24 @@ export type Listing = {
   id: string; seller_id: string; seller_name: string; title: string; description: string;
   price_kobo: number; category: string; condition: string; campus: string | null;
   whatsapp: string; image_path: string | null; status: "available" | "sold"; created_at: string;
+  image_paths?: string[]; sold_to?: string | null; sale_status?: "none" | "pending" | "confirmed"; sold_at?: string | null;
+};
+
+/** All photo paths for a listing, cover first (older listings only have image_path). */
+export const photoPaths = (l: Pick<Listing, "image_path" | "image_paths">) =>
+  l.image_paths && l.image_paths.length ? l.image_paths : l.image_path ? [l.image_path] : [];
+
+export const MAX_PHOTOS = 5;
+
+/** Soft background and icon colour for listings without photos. */
+export const CATEGORY_TINT: Record<string, string> = {
+  books: "bg-sky-50 text-sky-400",
+  electronics: "bg-violet-50 text-violet-400",
+  fashion: "bg-pink-50 text-pink-400",
+  hostel: "bg-amber-50 text-amber-500",
+  food: "bg-lime-50 text-lime-500",
+  services: "bg-teal-50 text-teal-500",
+  other: "bg-stone-100 text-stone-400",
 };
 
 export const naira = (kobo: number) =>

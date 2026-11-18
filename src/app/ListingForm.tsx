@@ -1,39 +1,73 @@
 "use client";
 
-import { ImagePlus, Send } from "lucide-react";
+import { ImagePlus, Send, X } from "lucide-react";
 import { useActionState, useState } from "react";
-import { CATEGORIES, CONDITIONS, type Listing } from "@/lib/market";
+import { CATEGORIES, CONDITIONS, MAX_PHOTOS, type Listing } from "@/lib/market";
+
+type Existing = { path: string; url: string };
 
 export function ListingForm({
   action: serverAction,
   initial,
-  initialImage,
+  existing = [],
 }: {
   action: (prev: { error?: string }, form: FormData) => Promise<{ error?: string }>;
   initial?: Listing;
-  initialImage?: string | null;
+  existing?: Existing[];
 }) {
   const [state, action, pending] = useActionState(serverAction, {} as { error?: string });
-  const [preview, setPreview] = useState<string | null>(initialImage ?? null);
+  const [keep, setKeep] = useState(existing.map((e) => e.path));
+  const [added, setAdded] = useState<{ file: File; url: string }[]>([]);
   const [desc, setDesc] = useState(initial?.description ?? "");
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const total = keep.length + added.length;
+
+  function onPick(list: FileList | null) {
+    if (!list) return;
+    const files = [...list].filter((f) => ["image/jpeg", "image/png", "image/webp"].includes(f.type));
+    const room = MAX_PHOTOS - total;
+    if (files.length > room) setPhotoError(`You can add ${room} more photo${room === 1 ? "" : "s"}.`);
+    else setPhotoError(null);
+    setAdded((a) => [...a, ...files.slice(0, Math.max(0, room)).map((file) => ({ file, url: URL.createObjectURL(file) }))]);
+  }
+
   return (
-    <form action={action} className="card mx-auto grid w-full max-w-2xl gap-5 p-6 sm:p-8">
+    <form
+      action={(fd) => {
+        fd.delete("images");
+        added.forEach((a) => fd.append("images", a.file));
+        keep.forEach((k) => fd.append("keep", k));
+        return action(fd);
+      }}
+      className="card mx-auto grid w-full max-w-2xl gap-5 p-6 sm:p-8"
+    >
       <div>
         <p className="eyebrow">{initial ? "Edit listing" : "New listing"}</p>
         <h1 className="page-title mt-1">{initial ? initial.title : "Sell something"}</h1>
       </div>
-      <label className="grid aspect-video cursor-pointer place-items-center overflow-hidden rounded-2xl border-2 border-dashed border-stone-300 bg-stone-50 text-sm text-stone-500 transition hover:border-accent hover:bg-accent/5">
-        {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="Listing photo preview" className="h-full w-full object-cover" />
-        ) : (
-          <span className="flex flex-col items-center gap-2">
-            <ImagePlus size={28} aria-hidden /> Add a photo (JPG, PNG or WebP, up to 3 MB)
-          </span>
-        )}
-        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" className="sr-only"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) setPreview(URL.createObjectURL(f)); }} />
-      </label>
+
+      <fieldset className="grid gap-2">
+        <legend className="mb-2 flex w-full justify-between text-sm font-medium text-stone-700">
+          Photos <small className="font-normal text-stone-400">{total}/{MAX_PHOTOS} · the first is the cover</small>
+        </legend>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {existing.filter((e) => keep.includes(e.path)).map((e) => (
+            <Thumb key={e.path} url={e.url} onRemove={() => setKeep((k) => k.filter((p) => p !== e.path))} />
+          ))}
+          {added.map((a, i) => (
+            <Thumb key={a.url} url={a.url} onRemove={() => setAdded((x) => x.filter((_, j) => j !== i))} />
+          ))}
+          {total < MAX_PHOTOS && (
+            <label className="grid aspect-square cursor-pointer place-items-center rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 text-center text-xs text-stone-500 transition hover:border-accent hover:bg-accent/5">
+              <span className="grid justify-items-center gap-1"><ImagePlus size={22} aria-hidden /> Add photos</span>
+              <input type="file" multiple accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { onPick(e.target.files); e.target.value = ""; }} />
+            </label>
+          )}
+        </div>
+        <small className="text-xs text-stone-500">JPG, PNG or WebP, up to 3 MB each.</small>
+        {photoError && <p role="alert" className="text-xs text-amber-700">{photoError}</p>}
+      </fieldset>
+
       <label className="field"><span>Title</span><input name="title" required maxLength={80} defaultValue={initial?.title} placeholder="CSC 201 textbook" /></label>
       <label className="field">
         <span className="flex justify-between">Description <small className="font-normal text-stone-400">{desc.length}/2000</small></span>
@@ -51,5 +85,17 @@ export function ListingForm({
       {state.error && <p role="alert" className="text-sm text-red-600">{state.error}</p>}
       <button className="btn !py-3" disabled={pending}><Send size={16} aria-hidden /> {pending ? "Saving…" : initial ? "Save changes" : "Post listing"}</button>
     </form>
+  );
+}
+
+function Thumb({ url, onRemove }: { url: string; onRemove: () => void }) {
+  return (
+    <div className="relative aspect-square overflow-hidden rounded-xl bg-stone-100">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={url} alt="" className="h-full w-full object-cover" />
+      <button type="button" onClick={onRemove} aria-label="Remove photo" className="absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-stone-900/70 text-white hover:bg-stone-900">
+        <X size={14} aria-hidden />
+      </button>
+    </div>
   );
 }

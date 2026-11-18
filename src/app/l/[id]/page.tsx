@@ -1,11 +1,13 @@
-import { Clock, MapPin, MessageCircle, Pencil, ShieldAlert, Tag, UserRound } from "lucide-react";
+import { BadgeCheck, Clock, MapPin, MessageCircle, MessagesSquare, Pencil, ShieldAlert, Tag, UserRound } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CategoryIcon } from "@/lib/category-icons";
 import { getUser } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/supabase/config";
-import { ago, CATEGORIES, CONDITIONS, imageUrl, label, naira, waLink, type Listing } from "@/lib/market";
+import { ago, CATEGORIES, CATEGORY_TINT, CONDITIONS, imageUrl, label, naira, photoPaths, waLink, type Listing } from "@/lib/market";
+import { startConversation } from "../../actions";
+import { Gallery } from "./Gallery";
 import { ListingCard } from "../../ListingCard";
 import { ShareButton } from "../../ShareButton";
 
@@ -18,7 +20,7 @@ async function load(id: string) {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { l } = await load((await params).id);
   if (!l) return {};
-  const img = imageUrl(l.image_path);
+  const img = imageUrl(photoPaths(l)[0] ?? null);
   return { title: `${l.title} · ${naira(l.price_kobo)}`, description: l.description.slice(0, 160), openGraph: img ? { images: [img] } : undefined };
 }
 
@@ -26,7 +28,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const { supabase, user, l } = await load(id);
   if (!l) notFound();
-  const img = imageUrl(l.image_path);
+  const urls = photoPaths(l).map((p) => imageUrl(p)!);
   const mine = user?.id === l.seller_id;
   const [{ data: similar }, { data: sellerMore }] = await Promise.all([
     supabase.from("listings").select("*").eq("category", l.category).eq("status", "available").neq("id", l.id).order("created_at", { ascending: false }).limit(4),
@@ -36,14 +38,11 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   return (
     <div className="grid gap-12">
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="card aspect-square overflow-hidden bg-stone-100">
-          {img ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={img} alt={l.title} className="h-full w-full object-cover" />
-          ) : (
-            <div className="grid h-full place-items-center text-stone-300"><CategoryIcon category={l.category} size={80} /></div>
-          )}
-        </div>
+        {urls.length ? (
+          <Gallery urls={urls} title={l.title} />
+        ) : (
+          <div className={`card grid aspect-square place-items-center ${CATEGORY_TINT[l.category] ?? CATEGORY_TINT.other}`}><CategoryIcon category={l.category} size={96} /></div>
+        )}
         <div className="grid h-fit gap-5">
           <div>
             <Link href={`/?cat=${l.category}`} className="eyebrow inline-flex items-center gap-1.5 hover:underline">
@@ -51,7 +50,12 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
             </Link>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">{l.title}</h1>
             <p className="mt-2 text-3xl font-bold text-accent">{naira(l.price_kobo)}</p>
-            {l.status === "sold" && <span className="badge mt-2 !bg-stone-900 !text-white">Sold</span>}
+            {l.status === "sold" && (
+              <span className="mt-2 flex flex-wrap gap-1.5">
+                <span className="badge !bg-stone-900 !text-white">Sold</span>
+                {l.sale_status === "confirmed" && <span className="badge !bg-emerald-100 !text-emerald-800"><BadgeCheck size={13} aria-hidden /> Confirmed by the buyer</span>}
+              </span>
+            )}
           </div>
           <dl className="grid grid-cols-2 gap-3 text-sm">
             {[
@@ -75,9 +79,14 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               <Link href={`/l/${l.id}/edit`} className="btn"><Pencil size={16} aria-hidden /> Edit listing</Link>
             ) : (
               l.status === "available" && (
-                <a href={waLink(l.whatsapp, l.title)} target="_blank" rel="noreferrer" className="btn !bg-[#128C4A] !shadow-none">
-                  <MessageCircle size={16} aria-hidden /> Chat on WhatsApp
-                </a>
+                <>
+                  <form action={startConversation.bind(null, l.id)}>
+                    <button className="btn"><MessagesSquare size={16} aria-hidden /> Message seller</button>
+                  </form>
+                  <a href={waLink(l.whatsapp, l.title)} target="_blank" rel="noreferrer" className="btn-outline">
+                    <MessageCircle size={16} aria-hidden /> WhatsApp
+                  </a>
+                </>
               )
             )}
             <ShareButton title={l.title} url={`${SITE_URL}/l/${l.id}`} />
