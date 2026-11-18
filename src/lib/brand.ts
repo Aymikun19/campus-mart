@@ -1,4 +1,4 @@
-import { BadgeCheck, Camera, ChartColumn, MessagesSquare, Search, Share2 } from "lucide-react";
+import { BadgeCheck, Camera, ChartColumn, MessagesSquare, Heart, Search } from "lucide-react";
 
 export const brand = {
   name: "CampusMart",
@@ -15,7 +15,7 @@ export const brand = {
     { icon: BadgeCheck, title: "Confirmed sales", text: "Sellers mark who bought an item and the buyer confirms they received it, so every sale is on record." },
     { icon: Search, title: "Smart search", text: "Full-text search across titles and descriptions, with category, condition and price filters." },
     { icon: ChartColumn, title: "Seller dashboard", text: "Track active and sold listings, edit details and see which sales are confirmed." },
-    { icon: Share2, title: "Share and discover", text: "Share any listing to your group chats and browse similar items on every page." },
+    { icon: Heart, title: "Save for later", text: "Heart any listing to build a shortlist, and see at a glance which ones have sold since." },
   ],
   steps: [
     ["Browse or search", "Find what you need from students on your campus."],
@@ -26,6 +26,7 @@ export const brand = {
   nav: [
     { href: "/", label: "Browse", public: true },
     { href: "/messages", label: "Messages" },
+    { href: "/saved", label: "Saved" },
     { href: "/me", label: "My listings" },
     { href: "/new", label: "Sell an item" },
   ] as { href: string; label: string; public?: boolean }[],

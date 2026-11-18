@@ -27,6 +27,11 @@ export default async function Browse({ searchParams }: { searchParams: Promise<P
   const { data, count } = await query.range(0, page * PAGE_SIZE - 1);
   const listings = (data ?? []) as Listing[];
   const total = count ?? listings.length;
+  const savedIds = new Set<string>();
+  if (user) {
+    const { data: sv } = await supabase.from("saved").select("listing_id");
+    for (const r of sv ?? []) savedIds.add(r.listing_id);
+  }
   const href = (patch: Partial<Params>) => {
     const p = new URLSearchParams(Object.entries({ q, cat, max, cond, sort, ...patch }).filter(([, v]) => v) as [string, string][]);
     return `/?${p}`;
@@ -113,7 +118,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<P
         </EmptyState>
       ) : (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {listings.map((l) => <ListingCard key={l.id} l={l} />)}
+          {listings.map((l) => <ListingCard key={l.id} l={l} saved={user && l.seller_id !== user.id ? savedIds.has(l.id) : undefined} />)}
         </div>
       )}
       {listings.length < total && (

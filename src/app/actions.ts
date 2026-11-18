@@ -127,3 +127,10 @@ export async function deleteListing(id: string, paths: string[]) {
   revalidatePath("/");
   revalidatePath("/me");
 }
+
+export async function toggleSaved(listingId: string, save: boolean) {
+  const { supabase } = await requireUser();
+  if (save) await supabase.from("saved").upsert({ listing_id: listingId }, { onConflict: "user_id,listing_id", ignoreDuplicates: true });
+  else await supabase.from("saved").delete().eq("listing_id", listingId);
+  revalidatePath("/saved");
+}

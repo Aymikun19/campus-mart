@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Images, MapPin } from "lucide-react";
+import { SaveButton } from "./SaveButton";
 import { CategoryIcon } from "@/lib/category-icons";
 import { ago, CATEGORY_TINT, CONDITIONS, isFresh, imageUrl, label, naira, photoPaths, type Listing } from "@/lib/market";
 
-export function ListingCard({ l }: { l: Listing }) {
+export function ListingCard({ l, saved }: { l: Listing; saved?: boolean }) {
   const photos = photoPaths(l);
   const img = imageUrl(photos[0] ?? null);
   const fresh = isFresh(l.created_at);
@@ -22,6 +23,9 @@ export function ListingCard({ l }: { l: Listing }) {
           {fresh && l.status !== "sold" && <span className="badge !bg-accent !text-white">New</span>}
           {l.status === "sold" && <span className="badge !bg-stone-900 !text-white">Sold</span>}
         </div>
+        {saved !== undefined && (
+          <span className="absolute right-2 top-2"><SaveButton id={l.id} saved={saved} compact /></span>
+        )}
         {photos.length > 1 && (
           <span className="badge absolute bottom-2 right-2 !bg-stone-900/70 !text-white"><Images size={12} aria-hidden /> {photos.length}</span>
         )}

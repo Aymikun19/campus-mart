@@ -10,6 +10,7 @@ import { startConversation } from "../../actions";
 import { Gallery } from "./Gallery";
 import { ListingCard } from "../../ListingCard";
 import { ShareButton } from "../../ShareButton";
+import { SaveButton } from "../../SaveButton";
 
 async function load(id: string) {
   const { supabase, user } = await getUser();
@@ -30,9 +31,10 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   if (!l) notFound();
   const urls = photoPaths(l).map((p) => imageUrl(p)!);
   const mine = user?.id === l.seller_id;
-  const [{ data: similar }, { data: sellerMore }] = await Promise.all([
+  const [{ data: similar }, { data: sellerMore }, { data: savedRow }] = await Promise.all([
     supabase.from("listings").select("*").eq("category", l.category).eq("status", "available").neq("id", l.id).order("created_at", { ascending: false }).limit(4),
     supabase.from("listings").select("*").eq("seller_id", l.seller_id).eq("status", "available").neq("id", l.id).order("created_at", { ascending: false }).limit(4),
+    user ? supabase.from("saved").select("listing_id").eq("listing_id", l.id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
 
   return (
@@ -89,6 +91,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
                 </>
               )
             )}
+            {user && !mine && <SaveButton id={l.id} saved={!!savedRow} />}
             <ShareButton title={l.title} url={`${SITE_URL}/l/${l.id}`} />
           </div>
           <p className="flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-900">
