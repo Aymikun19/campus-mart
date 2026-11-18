@@ -41,7 +41,9 @@ export function Chat({ conversation: c, listing, meId, initial }: { conversation
     };
   }, [supabase, c.id, meId]);
 
-  useEffect(() => bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" }), [messages.length]);
+  useEffect(() => {
+    bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length]);
 
   useEffect(() => {
     const missing = messages.map((m) => m.attachment_path).filter((p): p is string => Boolean(p) && !urls[p as string]);
@@ -151,7 +153,7 @@ export function Chat({ conversation: c, listing, meId, initial }: { conversation
                       </a>
                     ) : <span className="text-xs text-stone-500">Loading photo…</span>
                   )}
-                  {!grouped && <span className="text-[11px] text-stone-400">{when(m.created_at)}</span>}
+                  {!grouped && <span className="text-[11px] text-stone-400" suppressHydrationWarning>{when(m.created_at)}</span>}
                 </div>
               </div>
             );

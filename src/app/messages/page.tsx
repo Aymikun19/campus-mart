@@ -51,7 +51,7 @@ export default async function Inbox() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
                       <p className={`truncate ${unread ? "font-semibold" : "font-medium"}`}>{other}</p>
-                      <span className="shrink-0 text-xs text-stone-500">{when(c.last_message_at)}</span>
+                      <span className="shrink-0 text-xs text-stone-500" suppressHydrationWarning>{when(c.last_message_at)}</span>
                     </div>
                     <p className="truncate text-xs text-stone-500">{buying ? "Buying" : "Selling"} · {l?.title ?? "Listing removed"}{l && ` · ${naira(l.price_kobo)}`}</p>
                     <p className={`mt-0.5 truncate text-sm ${unread ? "text-stone-900" : "text-stone-500"}`}>{c.last_message_preview ?? "No messages yet"}</p>
