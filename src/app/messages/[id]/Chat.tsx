@@ -2,6 +2,7 @@
 
 import { ArrowLeft, BadgeCheck, CircleCheck, Clock, Loader2, PackageCheck, SendHorizontal } from "lucide-react";
 import Link from "next/link";
+import { Avatar } from "@/components/kit/Avatar";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { DB_SCHEMA } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/client";
@@ -94,7 +95,7 @@ export function Chat({ conversation: c, listing, meId, initial }: { conversation
             </Link>
           ) : null}
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">{other}</p>
+            <p className="flex items-center gap-2 truncate font-semibold"><Avatar userId={seller ? c.buyerId : c.sellerId} name={other} size={22} /> {other}</p>
             <p className="truncate text-xs text-stone-500">{listing ? <>{listing.title} · {naira(listing.price)}</> : "Listing removed"}</p>
           </div>
           {listing?.saleStatus === "confirmed" && listing.soldTo === c.buyerId && (

@@ -1,5 +1,6 @@
 import { MessagesSquare } from "lucide-react";
 import Link from "next/link";
+import { Avatar } from "@/components/kit/Avatar";
 import { requireUser } from "@/lib/supabase/server";
 import { CategoryIcon } from "@/lib/category-icons";
 import { when } from "@/lib/chat";
@@ -50,7 +51,10 @@ export default async function Inbox() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className={`truncate ${unread ? "font-semibold" : "font-medium"}`}>{other}</p>
+                      <p className={`flex min-w-0 items-center gap-2 ${unread ? "font-semibold" : "font-medium"}`}>
+                        <Avatar userId={buying ? c.seller_id : c.buyer_id} name={other} size={20} />
+                        <span className="truncate">{other}</span>
+                      </p>
                       <span className="shrink-0 text-xs text-stone-500" suppressHydrationWarning>{when(c.last_message_at)}</span>
                     </div>
                     <p className="truncate text-xs text-stone-500">{buying ? "Buying" : "Selling"} · {l?.title ?? "Listing removed"}{l && ` · ${naira(l.price_kobo)}`}</p>

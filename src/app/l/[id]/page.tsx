@@ -1,6 +1,7 @@
 import { BadgeCheck, Clock, MapPin, MessageCircle, MessagesSquare, Pencil, ShieldAlert, Tag, UserRound } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Avatar } from "@/components/kit/Avatar";
 import { notFound } from "next/navigation";
 import { CategoryIcon } from "@/lib/category-icons";
 import { getUser } from "@/lib/supabase/server";
@@ -63,13 +64,13 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
             {[
               [Tag, "Condition", label(CONDITIONS, l.condition)],
               [MapPin, "Location", l.campus ?? "Campus"],
-              [UserRound, "Seller", l.seller_name],
+              [UserRound, "Seller", l.seller_name, l.seller_id],
               [Clock, "Posted", ago(l.created_at)],
-            ].map(([Icon, k, v]) => {
+            ].map(([Icon, k, v, uid]) => {
               const I = Icon as typeof Tag;
               return (
                 <div key={k as string} className="flex items-center gap-2.5 rounded-xl bg-stone-50 p-3">
-                  <I size={16} className="text-accent" aria-hidden />
+                  {uid ? <Avatar userId={uid as string} name={v as string} size={28} /> : <I size={16} className="text-accent" aria-hidden />}
                   <div><dt className="text-xs text-stone-500">{k as string}</dt><dd className="font-medium">{v as string}</dd></div>
                 </div>
               );
