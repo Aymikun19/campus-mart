@@ -31,5 +31,5 @@ export const brand = {
   ] as { href: string; label: string; public?: boolean }[],
   width: "max-w-6xl",
   repo: "https://github.com/Aymikun19/campus-mart",
-  preview: null as string | null,
+  preview: "/preview.webp" as string | null,
 };

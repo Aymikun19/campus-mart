@@ -32,3 +32,11 @@ npm install && npm run dev
 ## Database schema
 
 All tables live in their own Postgres schema, `campusmart`, rather than `public`, so this app can share one Supabase project with my other demo apps. After running `supabase/schema.sql`, add `campusmart` under **Supabase → Project Settings → Data API → Exposed schemas**. The app selects it through `db: { schema }` in `src/lib/supabase/config.ts`.
+
+## Messaging, photos and confirmed sales
+
+Run `supabase/migrations/002_messaging_sales.sql` after `schema.sql`. It adds:
+
+- Buyer-seller conversations with realtime text, photo and voice-note messages. Media lives in a private `chat-media` bucket that only the two participants can read.
+- Up to five photos per listing.
+- Confirmed sales: the seller marks who bought an item (`mark_sold()`), the buyer confirms receipt (`confirm_purchase()`), and a trigger blocks anyone else from confirming or changing a confirmed sale.
